@@ -22,6 +22,10 @@ import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
+import {
+  Card,
+  CardContent,
+} from "./ui/card";
 
 const PurePreviewMessage = ({
   addToolApprovalResponse,
@@ -140,7 +144,7 @@ const PurePreviewMessage = ({
                           : undefined
                       }
                     >
-                      <Response>{sanitizeText(part.text)}</Response>
+                      <Response>{sanitizeText(part.text || '')}</Response>
                     </MessageContent>
                   </div>
                 );
@@ -259,6 +263,36 @@ const PurePreviewMessage = ({
                   </Tool>
                 </div>
               );
+            }
+
+            if (type === "tool-getValue") {
+              const { toolCallId, state } = part;
+              
+              if (state === "output-available" && part.output) {
+                const valueData = part.output as { valueType?: string; value?: string; unit?: string };
+                const displayValue = valueData.value ? `${valueData.value}${valueData.unit ? ' ' + valueData.unit : ''}` : 'N/A';
+                return (
+                  <div className="my-2" key={toolCallId}>
+  <Card className="inline-flex min-h-24 items-center gap-4 border-blue-200 bg-blue-50 px-6 py-4 dark:border-blue-800 dark:bg-blue-950">
+
+    <span className="text-3xl">
+      {valueData.valueType === 'currency' ? '💰' :
+       valueData.valueType === 'percentage' ? '📊' :
+       valueData.valueType === 'temperature' ? '🌡️' :
+       valueData.valueType === 'list' ? '📋' :
+       valueData.valueType === 'numeric' ? '🔢' : '📌'}
+    </span>
+
+    <span className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+      {displayValue}
+    </span>
+
+  </Card>
+</div>
+                );
+              }
+              
+              return null;
             }
 
             if (type === "tool-createDocument") {
